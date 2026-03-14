@@ -1,17 +1,22 @@
-const express = require('express');
+const path = require('path');
 const dotenv = require('dotenv');
+
+// Load environment variables first (before any code that uses process.env).
+// Works with .env file locally and with Render dashboard env vars in production.
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 
-dotenv.config();
-
-connectDB();
-
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -30,4 +35,12 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+};
+
+startServer().catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
