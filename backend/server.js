@@ -3,8 +3,7 @@ const dotenv = require('dotenv');
 
 // Load environment variables first (before any code that uses process.env).
 // Works with .env file locally and with Render dashboard env vars in production.
-dotenv.config({ path: path.resolve(__dirname, '.env') });
-
+dotenv.config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
