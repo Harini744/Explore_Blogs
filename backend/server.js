@@ -1,48 +1,49 @@
 const path = require('path');
 const dotenv = require('dotenv');
-
-// Load environment variables first (before any code that uses process.env).
-// Works with .env file locally and with Render dashboard env vars in production.
-dotenv.config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 
+// Load environment variables
+dotenv.config();
+
 const app = express();
 
+// Middleware
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://explore-blogs-z8iz.vercel.app"
-  ],
-  credentials: true,
+    // Allow localhost in dev, but use an environment variable for production
+    origin: process.env.CLIENT_URL,
+    credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/blogs', blogRoutes);
 
-// Error handler middleware (optional, simple one)
+// Error handler middleware
 app.use((err, req, res, next) => {
-    const statusCode = res.statusCode ? res.statusCode : 500;
-    res.status(statusCode);
-    res.json({
+    const statusCode = res.statusCode === 200 ? 500 : res.statusCode || 500;
+    res.status(statusCode).json({
         message: err.message,
-        stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+        stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
     });
 });
 
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  await connectDB();
-  app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+    try {
+        await connectDB();
+        app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    } catch (err) {
+        console.error('❌ Failed to start server:', err);
+        process.exit(1);
+    }
 };
 
-startServer().catch((err) => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+startServer();
