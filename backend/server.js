@@ -13,9 +13,10 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    // Allow localhost in dev, but use an environment variable for production
-    origin: process.env.CLIENT_URL,
-    credentials: true
+  origin: process.env.CLIENT_URL, // NO trailing slash here!
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
